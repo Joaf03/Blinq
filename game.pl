@@ -1,4 +1,5 @@
 include('state.pl').
+include('logic.pl').
 
 % play/0 starts the game and initializes configuration
 play :-
@@ -21,6 +22,8 @@ play :-
         write("Choose difficulty level for PC2 (Noob/Pro): "), flush_output(current_output),
         read_line_to_string(user_input, Difficulty2),
         GameConfig = [Player1, Player2, GameType, Difficulty1, Difficulty2]
+    ; GameType == "H/H" ->
+        GameConfig = [Player1, Player2, GameType]
     ; true
     ),
     
@@ -42,4 +45,8 @@ play :-
         write("Difficulty for PC1: "), write(Difficulty1), nl,
         write("Difficulty for PC2: "), write(Difficulty2), nl
     ; true
-    ).
+    ),
+
+    % List valid moves for the current player
+    valid_moves(GameState, ValidMoves),
+    write("Valid Moves: "), write(ValidMoves), nl.
