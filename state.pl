@@ -22,7 +22,7 @@ initial_state(GameConfig, GameState) :-
 
     (Player1 == "White" -> CurrentPlayer = Player1; CurrentPlayer = Player2),
     PiecesToPlay = [27, 27],
-
+    
     % Combine all elements into the game state
     GameState = [Board, GameType, CurrentPlayer, PiecesToPlay | Rest].
 

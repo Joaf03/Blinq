@@ -49,4 +49,13 @@ play :-
 
     % List valid moves for the current player
     valid_moves(GameState, ValidMoves),
-    write("Valid Moves: "), write(ValidMoves), nl.
+    write("Valid Moves: "), write(ValidMoves), nl,
+
+    % Prompt the user for their move
+    write("It's "), write(CurrentPlayer), write("'s turn."), nl,
+    write("Enter your move: "), flush_output(current_output),
+    read_line_to_string(user_input, MoveString),
+    term_string(Move, MoveString), % Convert the input string to a Prolog term
+    move(GameState, Move, NewGameState),
+    NewGameState = [NewBoard, GameType, CurrentPlayer, PiecesToPlay | Rest],
+    write("New Board: "), nl, write(NewBoard), nl.
