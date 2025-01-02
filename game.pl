@@ -15,7 +15,7 @@ play :-
         write("Choose difficulty level for PC (Noob/Pro): "), flush_output(current_output),
         read_line_to_string(user_input, Difficulty),
         GameConfig = [Player1, Player2, GameType, Difficulty]
-    % If he chose PC/PC, ask the difficulty level of both PC's
+    % If he chose PC/PC, ask the difficulty level of both PCs
     ; GameType == "PC/PC" ->
         write("Choose difficulty level for PC1 (Noob/Pro): "), flush_output(current_output),
         read_line_to_string(user_input, Difficulty1),
@@ -29,6 +29,7 @@ play :-
     
     % Initialize the game state and output it
     initial_state(GameConfig, GameState),
+    display_game(GameState),
     GameState = [Board, GameType, CurrentPlayer, PiecesToPlay | Rest],
     write("Initial Game State:"), nl,
     write("Board: "), write(Board), nl,
@@ -49,7 +50,7 @@ play :-
 
     % List valid moves for the current player
     valid_moves(GameState, ValidMoves),
-    write("Valid Moves: "), write(ValidMoves), nl,
+    write("Valid Moves: "), write(ValidMoves), nl.
 
     % Prompt the user for their move
     write("It's "), write(CurrentPlayer), write("'s turn."), nl,
@@ -59,3 +60,5 @@ play :-
     move(GameState, Move, NewGameState),
     NewGameState = [NewBoard, GameType, CurrentPlayer, PiecesToPlay | Rest],
     write("New Board: "), nl, write(NewBoard), nl.
+
+    
