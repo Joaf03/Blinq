@@ -152,3 +152,61 @@ insert_nth0(Index, Element, List, Result) :-
 replace_nth0(Index, NewElement, List, Result) :-
     delete_nth0(Index, List, Temp),
     insert_nth0(Index, NewElement, Temp, Result).
+
+
+% game_over/2 checks if the game is over and determines the winner
+game_over(GameState, Winner) :-
+    GameState = [Board, _, CurrentPlayer, _ | _],
+    (CurrentPlayer == "White" -> Color = white; Color = black),
+    (connected_sides(Board, Color) ->
+        Winner = CurrentPlayer
+    ;
+        Winner = "NO WINNER"
+    ).
+
+% connected_sides/3 checks if there is a path of connected cells of the same color from one side of the board to the opposite side
+connected_sides(Board, Color) :-
+    length(Board, NumRows),
+    nth0(1, Board, FirstRow),
+    length(FirstRow, NumCols),
+    NumRowsMinus2 is NumRows - 2,
+    NumColsMinus2 is NumCols - 2,
+    (Color == white ->
+        findall(Col, (between(1, NumColsMinus2, Col), nth0(Col, FirstRow, Color)), StartCols), % Columns which we will check if they are the starting point of a path that connects the 2 borders
+        findall(Col, (between(1, NumColsMinus2, Col), nth0(NumRowsMinus2, Board, LastRow), nth0(Col, LastRow, Color)), EndCols) % Columns which we will check if they are the ending point of a path that connects the 2 borders
+    ;
+        findall(Row, (between(1, NumRowsMinus2, Row), nth0(Row, Board, RowList), nth0(1, RowList, Color)), StartRows), % this might be wrong -> it might be checking the first list of row list here nth0(1, RowList, Color) instead of the first cell of the first list in rowlist
+        findall(Row, (between(1, NumRowsMinus2, Row), nth0(Row, Board, RowList), nth0(NumColsMinus2, RowList, Color)), EndRows) % this might be wrong
+    ),
+    (Color == white ->
+        member(StartCol, StartCols),
+        member(EndCol, EndCols),
+        path_exists(Board, 1, StartCol, NumRowsMinus2, EndCol, Color)
+    ;
+        member(StartRow, StartRows),
+        member(EndRow, EndRows),
+        path_exists(Board, StartRow, 0, EndRow, NumColsMinus2, Color)
+    ).
+
+% path_exists/6 checks if there is a path of connected cells of the same color from (StartRow, StartCol) to (EndRow, EndCol)
+path_exists(Board, StartRow, StartCol, EndRow, EndCol, Color) :-
+    dfs(Board, StartRow, StartCol, EndRow, EndCol, Color, []).
+
+% dfs/7 performs a depth-first search to find a path of connected cells of the same color
+dfs(Board, Row, Col, EndRow, EndCol, Color, Visited) :-
+    (Row == EndRow, Col == EndCol ->
+        true
+    ;
+        nth0(Row, Board, RowList),
+        nth0(Col, RowList, Color),
+        \+ member([Row, Col], Visited),
+        NewVisited = [[Row, Col] | Visited],
+        (neighbor(Row, Col, NewRow, Col), dfs(Board, NewRow, Col, EndRow, EndCol, Color, NewVisited);
+         neighbor(Row, Col, Row, NewCol), dfs(Board, Row, NewCol, EndRow, EndCol, Color, NewVisited))
+    ).
+
+% neighbor/4 finds the neighboring cells of a given cell
+neighbor(Row, Col, NewRow, Col) :- NewRow is Row - 1.
+neighbor(Row, Col, NewRow, Col) :- NewRow is Row + 1.
+neighbor(Row, Col, Row, NewCol) :- NewCol is Col - 1.
+neighbor(Row, Col, Row, NewCol) :- NewCol is Col + 1.
