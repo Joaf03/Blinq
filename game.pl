@@ -31,7 +31,7 @@ play :-
     initial_state(GameConfig, GameState),
     GameState = [Board, GameType, CurrentPlayer, PiecesToPlay | Rest],
     write("Initial Game State:"), nl,
-    write("Board: "), write(Board), nl,
+    write("Board: "), nl, write(Board), nl,
     write("Game Type: "), write(GameType), nl,
     write("Current Player: "), write(CurrentPlayer), nl,
     PiecesToPlay = [PiecesPlayer1, PiecesPlayer2],
@@ -46,7 +46,13 @@ play :-
         write("Difficulty for PC2: "), write(Difficulty2), nl
     ; true
     ),
-/*
+
+    % Start the game loop
+    game_loop(GameState).
+
+% game_loop/1 handles the main game loop
+game_loop(GameState) :-
+    GameState = [_, _, CurrentPlayer, _ | _],
     % List valid moves for the current player
     valid_moves(GameState, ValidMoves),
     write("Valid Moves: "), write(ValidMoves), nl,
@@ -57,8 +63,19 @@ play :-
     read_line_to_string(user_input, MoveString),
     term_string(Move, MoveString), % Convert the input string to a Prolog term
     move(GameState, Move, NewGameState),
-    NewGameState = [NewBoard, GameType, CurrentPlayer, PiecesToPlay | Rest],
-    write("New Board: "), nl, write(NewBoard), nl,
-    */
-    game_over(GameState, Winner),
-    write("Winner: "), write(Winner).
+    NewGameState = [Board, _, _, NewPiecesToPlay | _],
+    NewPiecesToPlay = [NewPiecesPlayer1, NewPiecesPlayer2],
+    write("Current Board: "),nl, write(Board), nl,
+    write("Pieces To Play for Player 1 after move: "), write(NewPiecesPlayer1), nl,
+    write("Pieces To Play for Player 2 after move: "), write(NewPiecesPlayer2), nl,
+    (game_over(NewGameState, Winner) ->
+        write("Game Over! Winner: "), write(Winner), nl
+    ;
+        % Switch the current player
+        switch_player(NewGameState, UpdatedGameState),
+        game_loop(UpdatedGameState)
+    ).
+
+% switch_player/2 switches the current player in the game state
+switch_player([Board, GameType, CurrentPlayer, PiecesToPlay | Rest], [Board, GameType, NewPlayer, PiecesToPlay | Rest]) :-
+    (CurrentPlayer == "White" -> NewPlayer = "Black"; NewPlayer = "White").

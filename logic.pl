@@ -85,7 +85,8 @@ move(GameState, Move, NewGameState) :-
     (member(Move, ListOfMoves) ->
         write('Valid move'), nl,
         execute_move(Board, Move, NewBoard),
-        NewGameState = [NewBoard, GameType, CurrentPlayer, PiecesToPlay | Rest] % Need to deduct PiecesToPlay from the player that just played
+        deduct_piece(CurrentPlayer, PiecesToPlay, NewPiecesToPlay),
+        NewGameState = [NewBoard, GameType, CurrentPlayer, NewPiecesToPlay | Rest] % Update PiecesToPlay
     ;
         write('Invalid Move!'), nl,
         write('Please enter a valid move: '), flush_output(current_output),
@@ -94,10 +95,18 @@ move(GameState, Move, NewGameState) :-
         move(GameState, NewMove, NewGameState)
     ).
 
+% deduct_piece/3 deducts a piece from the player that just played
+deduct_piece("White", [WhitePieces, BlackPieces], [NewWhitePieces, BlackPieces]) :-
+    NewWhitePieces is WhitePieces - 1.
+deduct_piece("Black", [WhitePieces, BlackPieces], [WhitePieces, NewBlackPieces]) :-
+    NewBlackPieces is BlackPieces - 1.
+
+% execute_move/3 xecutes a move in the game based on the given parameters.
 execute_move(Board, Move, NewBoard) :-
     Move = [Row, Col, Rotation],
     apply_rotation(Board, Row, Col, Rotation, NewBoard).
 
+% apply_rotation/5 applies the rotation to the 2x2 cell at the given coordinates
 apply_rotation(Board, Row, Col, Rotation, NewBoard) :-
     length(Board, NumRows),
     ActualRow is NumRows - Row - 1,
@@ -138,17 +147,18 @@ apply_rotation(Board, Row, Col, Rotation, NewBoard) :-
     replace_nth0(ActualRow1, TempRowList4, TempBoard1, NewBoard).
 
     
-
+% delete_nth0/3 is an auxiliar predicate for replace_nth0/4
 delete_nth0(Index, List, Result) :-
     nth0(Index, List, _, Rest),
     Result = Rest.
 
+% insert_nth0/4 is an auxiliar predicate for replace_nth0/4
 insert_nth0(Index, Element, List, Result) :-
     length(Before, Index),         % Create a prefix of length `Index`
     append(Before, After, List),   % Split `List` into `Before` and `After`
     append(Before, [Element|After], Result). % Insert `Element` at `Index`
 
-
+% replace_nth0/4 replaces the element at Index in List with NewElement, giving back Result
 replace_nth0(Index, NewElement, List, Result) :-
     delete_nth0(Index, List, Temp),
     insert_nth0(Index, NewElement, Temp, Result).
@@ -158,11 +168,9 @@ replace_nth0(Index, NewElement, List, Result) :-
 game_over(GameState, Winner) :-
     GameState = [Board, _, CurrentPlayer, _ | _],
     (CurrentPlayer == "White" -> Color = white; Color = black),
-    (connected_sides(Board, Color) ->
-        Winner = CurrentPlayer
-    ;
-        Winner = "NO WINNER"
-    ).
+    connected_sides(Board, Color),
+    Winner = CurrentPlayer.
+
 
 % connected_sides/3 checks if there is a path of connected cells of the same color from one side of the board to the opposite side
 connected_sides(Board, Color) :-
