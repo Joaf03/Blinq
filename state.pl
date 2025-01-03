@@ -26,59 +26,57 @@ initial_state(GameConfig, GameState) :-
     % Combine all elements into the game state
     GameState = [Board, GameType, CurrentPlayer, PiecesToPlay | Rest].
 
-% Display the game state, focusing on the 5x5 playable area with proper formatting.
+
+% Display the game state with a 5x5 board, each cell divided into 4 subcells.
 display_game(GameState) :-
-    GameState = [Board, GameType, CurrentPlayer, PiecesToPlay | _],
-    write('Next player: '), write(CurrentPlayer), nl,
-    display_header,
-    display_board(Board),
-    display_footer.
-
-% Display the header with the column numbers and frame top.
-display_header :-
-    write('    W   W   W   W   W'), nl,
-    write('  +-------+-------+-------+-------+-------+-------+'), nl,
-    write('      1       2       3       4       5'), nl.
-
-% Display the footer with the frame bottom.
-display_footer :-
-    write('  +-------+-------+-------+-------+-------+-------+'), nl,
-    write('    W   W   W   W   W'), nl.
-
-% Display the board: iterate through rows and print their content with frames on the sides.
-display_board(Board) :-
-    length(Board, NumRows),
-    display_rows(Board, 1, NumRows).
-
-% Iterate over the rows of the board and display them.
-display_rows([], _, _).
-display_rows([Row | RestRows], RowIndex, NumRows) :-
-    format('  B |', []), % Left frame
-    display_row(Row),
-    format('| B', []), % Right frame
+    GameState = [Board, _, CurrentPlayer, _ | _],
     nl,
-    (RowIndex < NumRows -> write('    |         |         |         |         |         |'), nl; true),
-    write('  +-------+-------+-------+-------+-------+-------+'), nl,
-    NewRowIndex is RowIndex + 1,
-    display_rows(RestRows, NewRowIndex, NumRows).
+    write('Next Player: '), write(CurrentPlayer), nl,
+    nl,
+    display_board(Board).
 
-% Display each rows individual cells.
-display_row([]).
-display_row([Cell | RestCells]) :-
-    display_cell(Cell),
-    write('     |'),
-    display_row(RestCells).
+% Display the board.
+display_board(Board) :-
+    display_horizontal_border,
+    display_rows(Board, 1).
 
-% Display a single cell based on its content.
-display_cell(empty) :-
-    write('         ').
-display_cell(white) :-
-    write('  W      ').
-display_cell(black) :-
-    write('  B      ').
-display_cell(neutral) :-
-    write('    N    ').
-display_cell(dual(white, black)) :-
-    write(' W B     ').
-display_cell(dual(black, white)) :-
-    write(' B W     ').
+% Display the rows of the board.
+display_rows([], _).
+display_rows([Row | RestRows], RowNumber) :-
+    display_row(Row, RowNumber),
+    (RowNumber =:= 5 ; RowNumber mod 2 =:= 1 -> display_horizontal_border; true),
+    NextRowNumber is RowNumber + 1,
+    display_rows(RestRows, NextRowNumber).
+
+% Display a single row (each row consists of multiple subcell lines).
+display_row(Row, RowNumber) :-
+    display_row_subcells(Row, top),
+    display_row_subcells(Row, bottom),
+    (RowNumber =:= 5 -> display_horizontal_border; true).
+
+% Display the subcells for a row, either top or bottom.
+display_row_subcells([], _) :-
+    write('|'), nl.
+display_row_subcells([Cell | RestCells], Position) :-
+    write('|'),
+    display_cell_subcell(Cell, Position),
+    display_row_subcells(RestCells, Position).
+
+% Display a subcell line of a single cell.
+display_cell_subcell(empty, top) :- write('   .   ').
+display_cell_subcell(empty, bottom) :- write('   .   ').
+display_cell_subcell(white, top) :- write('   W   ').
+display_cell_subcell(white, bottom) :- write('   W   ').
+display_cell_subcell(black, top) :- write('   B   ').
+display_cell_subcell(black, bottom) :- write('   B   ').
+display_cell_subcell(dual(white, black), top) :- write(' W   B ').
+display_cell_subcell(dual(white, black), bottom) :- write(' W   B ').
+display_cell_subcell(dual(black, white), top) :- write(' B   W ').
+display_cell_subcell(dual(black, white), bottom) :- write(' B   W ').
+display_cell_subcell(neutral, top) :- write('   N   ').
+display_cell_subcell(neutral, bottom) :- write('   N   ').
+
+% Display the horizontal border separating rows.
+display_horizontal_border :-
+    write('+-------+-------+-------+-------+-------+-------+-------+-------+-------+-------+-------+-------+'), nl.
+
