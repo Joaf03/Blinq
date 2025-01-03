@@ -57,6 +57,7 @@ is_empty_2x2(Board, Row, Col) :-
 
 % is_filled_2x2 checks if the 2x2 cell is completely filled, given the coordinates its top-left corner
 is_filled_2x2(Board, Row, Col) :-
+    Row =\= 10,
     nth0(Row, Board, RowList),
     nth0(Col, RowList, SubCell1),
     Col1 is Col + 1,
@@ -166,10 +167,13 @@ replace_nth0(Index, NewElement, List, Result) :-
 
 % game_over/2 checks if the game is over and determines the winner
 game_over(GameState, Winner) :-
-    GameState = [Board, _, CurrentPlayer, _ | _],
-    (CurrentPlayer == "White" -> Color = white; Color = black),
-    connected_sides(Board, Color),
-    Winner = CurrentPlayer.
+    GameState = [Board, _, _, _ | _],
+    (connected_sides(Board, white) ->
+        Winner = "White"
+    ; connected_sides(Board, black) ->
+        Winner = "Black"
+    ; fail
+    ).
 
 
 % connected_sides/3 checks if there is a path of connected cells of the same color from one side of the board to the opposite side

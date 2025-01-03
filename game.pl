@@ -66,14 +66,18 @@ game_loop(GameState) :-
     NewGameState = [Board, _, _, NewPiecesToPlay | _],
     NewPiecesToPlay = [NewPiecesPlayer1, NewPiecesPlayer2],
     write("Current Board: "),nl, write(Board), nl,
-    write("Pieces To Play for Player 1 after move: "), write(NewPiecesPlayer1), nl,
-    write("Pieces To Play for Player 2 after move: "), write(NewPiecesPlayer2), nl,
     (game_over(NewGameState, Winner) ->
         write("Game Over! Winner: "), write(Winner), nl
     ;
-        % Switch the current player
-        switch_player(NewGameState, UpdatedGameState),
-        game_loop(UpdatedGameState)
+       (NewPiecesPlayer1 =:= 0, NewPiecesPlayer2 =:= 0 ->
+            write("No more pieces left. It is a draw!"), nl
+        ;
+            % Switch the current player
+            switch_player(NewGameState, UpdatedGameState),
+            write("Pieces To Play for Player 1 after move: "), write(NewPiecesPlayer1), nl,
+            write("Pieces To Play for Player 2 after move: "), write(NewPiecesPlayer2), nl,
+            game_loop(UpdatedGameState)
+        )
     ).
 
 % switch_player/2 switches the current player in the game state
