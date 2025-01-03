@@ -1,5 +1,6 @@
 include('state.pl').
 include('logic.pl').
+include('ai.pl').
 
 % play/0 starts the game and initializes configuration
 play :-
@@ -12,14 +13,14 @@ play :-
     read_line_to_string(user_input, GameType),
     % If he chose H/PC or PC/H, ask the difficulty level of the PC
     ( (GameType == "H/PC" ; GameType == "PC/H") ->
-        write("Choose difficulty level for PC (Noob/Pro): "), flush_output(current_output),
+        write("Choose difficulty level for PC (1/2): "), flush_output(current_output),
         read_line_to_string(user_input, Difficulty),
         GameConfig = [Player1, Player2, GameType, Difficulty]
     % If he chose PC/PC, ask the difficulty level of both PC's
     ; GameType == "PC/PC" ->
-        write("Choose difficulty level for PC1 (Noob/Pro): "), flush_output(current_output),
+        write("Choose difficulty level for PC1 (1/2): "), flush_output(current_output),
         read_line_to_string(user_input, Difficulty1),
-        write("Choose difficulty level for PC2 (Noob/Pro): "), flush_output(current_output),
+        write("Choose difficulty level for PC2 (1/2): "), flush_output(current_output),
         read_line_to_string(user_input, Difficulty2),
         GameConfig = [Player1, Player2, GameType, Difficulty1, Difficulty2]
     ; GameType == "H/H" ->
@@ -29,7 +30,7 @@ play :-
     
     % Initialize the game state and output it
     initial_state(GameConfig, GameState),
-    GameState = [Board, GameType, CurrentPlayer, PiecesToPlay | Rest],
+    GameState = [Board, GameType, CurrentPlayer, PiecesToPlay, Player1, Player2 | Rest],
     write("Initial Game State:"), nl,
     write("Board: "), nl, write(Board), nl,
     write("Game Type: "), write(GameType), nl,
@@ -52,18 +53,35 @@ play :-
 
 % game_loop/1 handles the main game loop
 game_loop(GameState) :-
-    GameState = [_, _, CurrentPlayer, _ | _],
+    GameState = [_, GameType, CurrentPlayer, _, Player1, Player2 | Rest],
     % List valid moves for the current player
     valid_moves(GameState, ValidMoves),
     write("Valid Moves: "), write(ValidMoves), nl,
+    % Determine the player type and choose the move
+    (GameType == "H/H" ->
+        PlayerType = human
+    ; (GameType == "H/PC", CurrentPlayer == "White") ->
+        (Player1 == "White" -> PlayerType = human; Rest = [Difficulty], PlayerType = Difficulty)
+    ; (GameType == "H/PC", CurrentPlayer == "Black") ->
+        (Player1 == "White" -> Rest = [Difficulty], PlayerType = Difficulty; PlayerType = human)
+    ; (GameType == "PC/H", CurrentPlayer == "White") ->
+        (Player1 == "White" -> Rest = [Difficulty], PlayerType = Difficulty; PlayerType = human)
+    ; (GameType == "PC/H", CurrentPlayer == "Black") ->
+        (Player1 == "White" -> PlayerType = human; Rest = [Difficulty], PlayerType = Difficulty)
+    /*; (GameType == "PC/PC", CurrentPlayer == "White") ->
+        PlayerType = Difficulty1
+    ; (GameType == "PC/PC", CurrentPlayer == "Black") ->
+        PlayerType = Difficulty2*/
+    ),
 
     % Prompt the user for their move
     write("It's "), write(CurrentPlayer), write("'s turn."), nl,
-    write("Enter your move: "), flush_output(current_output),
-    read_line_to_string(user_input, MoveString),
-    term_string(Move, MoveString), % Convert the input string to a Prolog term
+    write("AAAA"), nl,
+    choose_move(GameState, PlayerType, Move),
+    write("BBBB"), nl,
     move(GameState, Move, NewGameState),
-    NewGameState = [Board, _, _, NewPiecesToPlay | _],
+    write("CCCC"), nl,
+    NewGameState = [Board, _, _, NewPiecesToPlay, Player1, Player2 | _],
     NewPiecesToPlay = [NewPiecesPlayer1, NewPiecesPlayer2],
     write("Current Board: "),nl, write(Board), nl,
     (game_over(NewGameState, Winner) ->
@@ -81,5 +99,5 @@ game_loop(GameState) :-
     ).
 
 % switch_player/2 switches the current player in the game state
-switch_player([Board, GameType, CurrentPlayer, PiecesToPlay | Rest], [Board, GameType, NewPlayer, PiecesToPlay | Rest]) :-
+switch_player([Board, GameType, CurrentPlayer, PiecesToPlay, Player1, Player2 | Rest], [Board, GameType, NewPlayer, PiecesToPlay, Player1, Player2 | Rest]) :-
     (CurrentPlayer == "White" -> NewPlayer = "Black"; NewPlayer = "White").

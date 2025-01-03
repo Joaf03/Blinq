@@ -10,7 +10,7 @@ find_moves(Board, Row, Col, Acc, Moves) :-
     length(Board, NumRows),
     nth1(1, Board, FirstRow),
     length(FirstRow, NumCols),
-    (Row =< NumRows - 2, Col =< NumCols - 2 -> % Check bounds for 2x2 subcells and ensure Row and Col are odd
+    (Row =< NumRows - 3, Col =< NumCols - 3 -> % Check bounds for 2x2 subcells and ensure Row and Col are odd
         (valid_cell(Board, Row, Col) ->
             % We are making this operation because we are asked 
             % to consider the lower-left corner of the board as the origin coordenates 
@@ -26,7 +26,7 @@ find_moves(Board, Row, Col, Acc, Moves) :-
         
         % Calculate the next column and row and recursively call find_moves
         NextCol is Col + 1,
-        (NextCol =< NumCols - 2 ->
+        (NextCol =< NumCols - 3 ->
             find_moves(Board, Row, NextCol, NewAcc, Moves)
         ;
             NextRow is Row + 1,
@@ -57,7 +57,6 @@ is_empty_2x2(Board, Row, Col) :-
 
 % is_filled_2x2 checks if the 2x2 cell is completely filled, given the coordinates its top-left corner
 is_filled_2x2(Board, Row, Col) :-
-    Row =\= 10,
     nth0(Row, Board, RowList),
     nth0(Col, RowList, SubCell1),
     Col1 is Col + 1,
@@ -77,24 +76,13 @@ valid_cell(Board, Row, Col) :-
     is_filled_2x2(Board, Row, Col).
 
 
-
 % move/3 checks the valid_moves list and executes the specified move if it is within that list. 
 % It also updates the GameState
 move(GameState, Move, NewGameState) :-
-    GameState = [Board, GameType, CurrentPlayer, PiecesToPlay | Rest],
-    valid_moves(GameState, ListOfMoves),
-    (member(Move, ListOfMoves) ->
-        write('Valid move'), nl,
-        execute_move(Board, Move, NewBoard),
-        deduct_piece(CurrentPlayer, PiecesToPlay, NewPiecesToPlay),
-        NewGameState = [NewBoard, GameType, CurrentPlayer, NewPiecesToPlay | Rest] % Update PiecesToPlay
-    ;
-        write('Invalid Move!'), nl,
-        write('Please enter a valid move: '), flush_output(current_output),
-        read_line_to_string(user_input, NewMoveString),
-        term_string(NewMove, NewMoveString),
-        move(GameState, NewMove, NewGameState)
-    ).
+    GameState = [Board, GameType, CurrentPlayer, PiecesToPlay, _, _ | Rest],
+    execute_move(Board, Move, NewBoard),
+    deduct_piece(CurrentPlayer, PiecesToPlay, NewPiecesToPlay),
+    NewGameState = [NewBoard, GameType, CurrentPlayer, NewPiecesToPlay, _, _ | Rest]. % Update PiecesToPlay
 
 % deduct_piece/3 deducts a piece from the player that just played
 deduct_piece("White", [WhitePieces, BlackPieces], [NewWhitePieces, BlackPieces]) :-
@@ -167,7 +155,7 @@ replace_nth0(Index, NewElement, List, Result) :-
 
 % game_over/2 checks if the game is over and determines the winner
 game_over(GameState, Winner) :-
-    GameState = [Board, _, _, _ | _],
+    GameState = [Board, _, _, _, _, _ | _],
     (connected_sides(Board, white) ->
         Winner = "White"
     ; connected_sides(Board, black) ->
