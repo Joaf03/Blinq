@@ -42,7 +42,7 @@ simulate_move(GameState, Move, NewGameState) :-
 % value/3 evaluates the game state for the given player based on the number of valid 2x2 cells completely filled by the player's pieces color
 value(GameState, Player, Value) :-
     GameState = [Board | _],
-    (Player == "White" -> Color = white ; Color = black),
+    (Player == 'White' -> Color = white ; Color = black),
     valid_moves(GameState, ValidMoves),
     length(Board, NumRows),
     findall([Row, Col], (member([Row, Col, _], ValidMoves), ActualRow is NumRows - Row - 1, is_filled_2x2_by_color(Board, ActualRow, Col, Color)), FilledCells),
