@@ -68,19 +68,18 @@ game_loop(GameState) :-
         (Player1 == "White" -> Rest = [Difficulty], PlayerType = Difficulty; PlayerType = human)
     ; (GameType == "PC/H", CurrentPlayer == "Black") ->
         (Player1 == "White" -> PlayerType = human; Rest = [Difficulty], PlayerType = Difficulty)
-    /*; (GameType == "PC/PC", CurrentPlayer == "White") ->
+    ; (GameType == "PC/PC", CurrentPlayer == "White") ->
+        Rest = [Difficulty1, _],
         PlayerType = Difficulty1
     ; (GameType == "PC/PC", CurrentPlayer == "Black") ->
-        PlayerType = Difficulty2*/
+        Rest = [_, Difficulty2],
+        PlayerType = Difficulty2
     ),
 
     % Prompt the user for their move
     write("It's "), write(CurrentPlayer), write("'s turn."), nl,
-    write("AAAA"), nl,
     choose_move(GameState, PlayerType, Move),
-    write("BBBB"), nl,
     move(GameState, Move, NewGameState),
-    write("CCCC"), nl,
     NewGameState = [Board, _, _, NewPiecesToPlay, Player1, Player2 | _],
     NewPiecesToPlay = [NewPiecesPlayer1, NewPiecesPlayer2],
     write("Current Board: "),nl, write(Board), nl,
