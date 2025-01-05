@@ -1,35 +1,39 @@
 :- consult('logic.pl').
+:- use_module(library(random)).
 
 % choose_move/3 chooses the move based on difficulty in case of PC player
 % and prompts the user for a move in case of human players
 choose_move(GameState, PlayerType, Move) :-
-    write("PLAYERTYPE: "), write(PlayerType), nl,
+    write('PLAYERTYPE: '), write(PlayerType), nl,
     (PlayerType == human ->
-        write("Enter your move (format: [Row, Col, Rotation]): "), flush_output(current_output),
-        read_line_to_string(user_input, MoveString),
-        term_string(Move, MoveString),
+        write('Enter your move (format: [Row, Col, Rotation]): '),
+        read_input2(Move),
         valid_moves(GameState, ValidMoves),
         (member(Move, ValidMoves) ->
-            write("Valid move!"), nl,
+            write('Valid move!'), nl,
             true
         ;
-            write("Invalid Move! Please enter a valid move."), nl,
+            write('Invalid Move! Please enter a valid move.'), nl,
             choose_move(GameState, PlayerType, Move)
         )
-    ; PlayerType == "1" ->
+    ; PlayerType == '1' ->
         valid_moves(GameState, ValidMoves),
         random_member(Move, ValidMoves),
-        write("PC MADE THE MOVE: "), write(Move), nl
-    ; PlayerType == "2" ->
+        write('PC MADE THE MOVE: '), write(Move), nl
+    ; PlayerType == '2' ->
         GameState = [_, _, CurrentPlayer | _],
         valid_moves(GameState, ValidMoves),
         findall(Value-Move, (member(Move, ValidMoves), simulate_move(GameState, Move, NewGameState), value(NewGameState, CurrentPlayer, Value)), MovesWithValues),
-        write("AAAAA: "), nl, write(MovesWithValues), nl,
+        %write("AAAAA: "), nl, write(MovesWithValues), nl,
         max_member(MaxValue-_, MovesWithValues),
         findall(M, (member(Value-M, MovesWithValues), Value == MaxValue), BestMoves),
         random_member(Move, BestMoves),
-        write("PC MADE THE MOVE: "), write(Move), nl
+        write('PC MADE THE MOVE: '), write(Move), nl
     ).
+
+% Helper input read
+read_input2(Input) :-
+    read(Input).  % directly reads the input as Prolog term
 
 % simulate_move/3 simulates a move and returns the new game state
 simulate_move(GameState, Move, NewGameState) :-

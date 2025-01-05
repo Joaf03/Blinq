@@ -18,8 +18,8 @@ initial_state(GameConfig, GameState) :-
         [black, empty, empty, empty, empty, empty, empty, empty, empty, empty, empty, black],
         [empty, white, white, white, white, white, white, white, white, white, white, empty]
     ],
-
-    (Player1 == "White" -> CurrentPlayer = Player1; CurrentPlayer = Player2),
+    
+    (Player1 == 'White' -> CurrentPlayer = Player1; CurrentPlayer = Player2),
     PiecesToPlay = [27, 27],
     
     % Combine all elements into the game state

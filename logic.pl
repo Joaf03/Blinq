@@ -1,4 +1,5 @@
 :-use_module(library(lists)).
+:-use_module(library(between)).
 
 % valid_moves/2 gets all the possible valid moves given the state of the game
 valid_moves(GameState, ListOfMoves) :-
@@ -80,14 +81,15 @@ valid_cell(Board, Row, Col) :-
 % It also updates the GameState
 move(GameState, Move, NewGameState) :-
     GameState = [Board, GameType, CurrentPlayer, PiecesToPlay, _, _ | Rest],
+
     execute_move(Board, Move, NewBoard),
     deduct_piece(CurrentPlayer, PiecesToPlay, NewPiecesToPlay),
     NewGameState = [NewBoard, GameType, CurrentPlayer, NewPiecesToPlay, _, _ | Rest]. % Update PiecesToPlay
 
 % deduct_piece/3 deducts a piece from the player that just played
-deduct_piece("White", [WhitePieces, BlackPieces], [NewWhitePieces, BlackPieces]) :-
+deduct_piece('White', [WhitePieces, BlackPieces], [NewWhitePieces, BlackPieces]) :-
     NewWhitePieces is WhitePieces - 1.
-deduct_piece("Black", [WhitePieces, BlackPieces], [WhitePieces, NewBlackPieces]) :-
+deduct_piece('Black', [WhitePieces, BlackPieces], [WhitePieces, NewBlackPieces]) :-
     NewBlackPieces is BlackPieces - 1.
 
 % execute_move/3 xecutes a move in the game based on the given parameters.
@@ -157,9 +159,9 @@ replace_nth0(Index, NewElement, List, Result) :-
 game_over(GameState, Winner) :-
     GameState = [Board, _, _, _, _, _ | _],
     (connected_sides(Board, white) ->
-        Winner = "White"
+        Winner = 'White'
     ; connected_sides(Board, black) ->
-        Winner = "Black"
+        Winner = 'Black'
     ; fail
     ).
 
