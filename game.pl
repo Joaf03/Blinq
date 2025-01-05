@@ -1,6 +1,6 @@
-include('state.pl').
-include('logic.pl').
-include('ai.pl').
+:- consult('state.pl').
+:- consult('logic.pl').
+:- consult('ai.pl').
 
 % play/0 starts the game and initializes configuration
 play :-
@@ -30,9 +30,10 @@ play :-
     
     % Initialize the game state and output it
     initial_state(GameConfig, GameState),
-    GameState = [Board, GameType, CurrentPlayer, PiecesToPlay, Player1, Player2 | Rest],
+    GameState = [_, GameType, CurrentPlayer, PiecesToPlay, Player1, Player2 | Rest],
     write("Initial Game State:"), nl,
-    write("Board: "), nl, write(Board), nl,
+    %write("Board: "), nl, write(Board), nl,
+    display_game(GameState),
     write("Game Type: "), write(GameType), nl,
     write("Current Player: "), write(CurrentPlayer), nl,
     PiecesToPlay = [PiecesPlayer1, PiecesPlayer2],
@@ -80,9 +81,10 @@ game_loop(GameState) :-
     write("It's "), write(CurrentPlayer), write("'s turn."), nl,
     choose_move(GameState, PlayerType, Move),
     move(GameState, Move, NewGameState),
-    NewGameState = [Board, _, _, NewPiecesToPlay, Player1, Player2 | _],
+    NewGameState = [_, _, _, NewPiecesToPlay, Player1, Player2 | _],
     NewPiecesToPlay = [NewPiecesPlayer1, NewPiecesPlayer2],
-    write("Current Board: "),nl, write(Board), nl,
+    display_game(NewGameState),
+    %write("Current Board: "),nl, write(Board), nl,
     (game_over(NewGameState, Winner) ->
         write("Game Over! Winner: "), write(Winner), nl
     ;
